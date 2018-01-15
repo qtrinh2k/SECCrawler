@@ -14,6 +14,8 @@ namespace SECCrawler
     {
         static void Main(string[] args)
         {
+            string baseUrl = "https://www.sec.gov";
+
             string cikTickerPath = @"C:\Users\Matrix-PC\source\repos\SECCrawler\cik_ticker.csv";
 
             var cikInfos = ImportCIKInfo(cikTickerPath);
@@ -23,29 +25,39 @@ namespace SECCrawler
                 Console.WriteLine("Downloading Ticker={0}, CIK={1}", cik.Ticker, cik.CIK);
                 string downloadFile = GetSECFilling(cik, ReportType.Annual);
 
+                string path = string.Format("c:\\temp\\SEC\\{0}_{1}", cik.Ticker, cik.CIK);
+
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
                 //down each filling report
-                //entry/content/filing-href
+                //feed/entry/content/filing-href
                 //XmlDocument xdoc = new XmlDocument();
                 //xdoc.Load(downloadFile);
 
                 //XmlNamespaceManager mgr = new XmlNamespaceManager(xdoc.NameTable);
                 //mgr.AddNamespace("x", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties");
 
-                //XmlNodeList nodes = xdoc.SelectNodes("//feed");
+                //XmlNodeList nodes = xdoc.SelectNodes("//feed");filing-href
+
                 XElement xml = XElement.Load(downloadFile);
-                string fillingHref = xml.Descendants("filling-href").Select(x => x.Value).FirstOrDefault();
-                Console.WriteLine(fillingHref);
-                //foreach (XmlNode node in nodes)
-                //{
-                //    string content = DownloadContent(node.InnerText);
+                IEnumerable<XElement> fillingHrefs = xml.Descendants().Where(x => x.Name.LocalName.Equals("filing-href"));
 
-                //    search content from report
-                //    Archives(.)*10k\.htm
-                //    Regex regex = new Regex("Archives(.)*10k\\.htm", RegexOptions.Multiline);
-                //    Match result = regex.Match(content);
+                foreach (XElement node in fillingHrefs)
+                {
+                    Console.WriteLine(node.Value);
+                    string content = DownloadContent(node.Value);
 
-                //    Console.WriteLine(result.Value);
-                //}
+                    //search content from report
+                    Regex regex = new Regex("Archives(.)*10k\\.htm\">", RegexOptions.Singleline);
+                    Match result = regex.Match(content);
+                    
+                    Console.WriteLine(result.Value.Replace("\">", ""));
+
+                    string reportUrl = string.Format("{0}/{1}", baseUrl, result.Value.Replace("\">", ""));
+                    string filePath = string.Format("{0}\\{1}", path, result.Value.Split('/').LastOrDefault()).Replace("\">", "");
+                    DownloadContentToFile(reportUrl, filePath);
+                }
             }
 
         }
@@ -77,6 +89,29 @@ namespace SECCrawler
             }
 
             return summaryFile;
+        }
+
+        private static void DownloadContentToFile(string url, string filePath)
+        {
+            Console.WriteLine(url);
+
+            if (File.Exists(filePath))
+            {
+                Console.WriteLine("FilePath={0} already exist.", filePath);
+                return;
+            }
+
+            using (WebClient client = new WebClient())
+            {
+                try
+                {
+                    client.DownloadFile(url, filePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
         }
 
         private static string DownloadContent(string url)
