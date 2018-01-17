@@ -7,6 +7,7 @@ using System.Net;
 using System.Xml;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace SECCrawler
 {
@@ -20,12 +21,17 @@ namespace SECCrawler
             string wikiSP500FilePath = @"C:\Users\Matrix-PC\source\repos\SECCrawler\sp500List.txt";
             string wikiSP500Content = File.ReadAllText(wikiSP500FilePath);
 
+            List<SECFilingInfo> filings = new List<SECFilingInfo>();
+
             var cikInfos = ImportCIKInfo(cikTickerPath);
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
             //test only
             //cikInfos = cikInfos.Where(x => x.CIK == 1500217);
             foreach (var cik in cikInfos)
             {
+                SECFilingInfo filingInfo = new SECFilingInfo();
+                filingInfo.CompanyInfo = cik;
+
                 Console.WriteLine("Downloading Ticker={0}, CIK={1}", cik.Ticker, cik.CIK);
                 string downloadFile = GetSECFilling(cik, ReportType.Annual);
 
@@ -36,18 +42,22 @@ namespace SECCrawler
 
 
                 XElement xml = XElement.Load(downloadFile);
-                IEnumerable<XElement> fillingHrefs = xml.Descendants().Where(x => x.Name.LocalName.Equals("filing-href"));
 
-                foreach (XElement node in fillingHrefs)
+                //TODO: all entry and go through each entry to store info
+                IEnumerable<XElement> entries = xml.Descendants().Where(x => x.Name.LocalName.Equals("entry"));
+                foreach(XElement entry in entries)
                 {
-                    Console.WriteLine(node.Value);
-                    string content = DownloadContent(node.Value);
+                    Filing filing = new Filing();
+                    var href = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault();
+
+                    //get content from filing_href
+                    string content = DownloadContent(href.Value);
 
                     //search content from report
                     Regex regex = new Regex("Archives(.)*10(.){0,4}k(.){0,20}.htm\">", RegexOptions.Singleline);
                     Match result = regex.Match(content);
 
-                    if(result.Value.Length < 10)
+                    if (result.Value.Length < 10)
                     {
                         Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
                         continue;
@@ -58,6 +68,32 @@ namespace SECCrawler
                     string filePath = string.Format("{0}\\{1}", path, reportHref.Split('/').LastOrDefault());
                     DownloadContentToFile(reportUrl, filePath);
                 }
+
+                //IEnumerable<XElement> fillingHrefs = xml.Descendants().Where(x => x.Name.LocalName.Equals("filing-href"));
+
+                //foreach (XElement node in fillingHrefs)
+                //{
+                //    Filing filing = new Filing();
+                    
+                //    Console.WriteLine(node.Value);
+                //    string content = DownloadContent(node.Value);
+
+                //    //search content from report
+                //    Regex regex = new Regex("Archives(.)*10(.){0,4}k(.){0,20}.htm\">", RegexOptions.Singleline);
+                //    Match result = regex.Match(content);
+
+                //    if(result.Value.Length < 10)
+                //    {
+                //        Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
+                //        continue;
+                //    }
+
+                //    string reportHref = result.Value.Substring(0, result.Value.IndexOf("\">", 0));
+                //    string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
+                //    string filePath = string.Format("{0}\\{1}", path, reportHref.Split('/').LastOrDefault());
+                //    DownloadContentToFile(reportUrl, filePath);
+                    
+                //}
             }
 
         }
@@ -185,5 +221,14 @@ namespace SECCrawler
         public string Incorportated { get; set; }
         public string IRS { get; set; }
 
+    }
+
+
+    [JsonObject]
+    public class SECFilingInfo
+    {
+        public CIKInfo CompanyInfo { get; set; }
+
+        public List<Filing> Filings { get; set; }
     }
 }
