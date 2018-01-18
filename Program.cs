@@ -8,12 +8,14 @@ using System.Xml;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace SECCrawler
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             string baseUrl = "https://www.sec.gov";
 
@@ -29,8 +31,11 @@ namespace SECCrawler
             //cikInfos = cikInfos.Where(x => x.CIK == 1500217);
             foreach (var cik in cikInfos)
             {
-                SECFilingInfo filingInfo = new SECFilingInfo();
-                filingInfo.CompanyInfo = cik;
+                SECFilingInfo filingInfo = new SECFilingInfo
+                {
+                    CompanyInfo = cik,
+                    Filings = new List<Filing>()
+                };
 
                 Console.WriteLine("Downloading Ticker={0}, CIK={1}", cik.Ticker, cik.CIK);
                 string downloadFile = GetSECFilling(cik, ReportType.Annual);
@@ -49,7 +54,12 @@ namespace SECCrawler
                 {
                     Filing filing = new Filing();
                     var href = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault();
-
+                    filing.fileNumber = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number")).FirstOrDefault().Value;
+                    filing.fileNumberHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number-href")).FirstOrDefault().Value;
+                    filing.FilingDate = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-date")).FirstOrDefault().Value;
+                    filing.FilingHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault().Value;
+                    filing.FilingType = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-type")).FirstOrDefault().Value;
+                     
                     //get content from filing_href
                     string content = DownloadContent(href.Value);
 
@@ -60,6 +70,7 @@ namespace SECCrawler
                     if (result.Value.Length < 10)
                     {
                         Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
+                        filing.DownloadStatus = "Fail";
                         continue;
                     }
 
@@ -67,34 +78,28 @@ namespace SECCrawler
                     string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
                     string filePath = string.Format("{0}\\{1}", path, reportHref.Split('/').LastOrDefault());
                     DownloadContentToFile(reportUrl, filePath);
+
+                    filing.DownloadReportPath = filePath;
+                    filing.DownloadStatus = "Success";
+
+                    filingInfo.Filings.Add(filing);
                 }
 
-                //IEnumerable<XElement> fillingHrefs = xml.Descendants().Where(x => x.Name.LocalName.Equals("filing-href"));
-
-                //foreach (XElement node in fillingHrefs)
-                //{
-                //    Filing filing = new Filing();
-                    
-                //    Console.WriteLine(node.Value);
-                //    string content = DownloadContent(node.Value);
-
-                //    //search content from report
-                //    Regex regex = new Regex("Archives(.)*10(.){0,4}k(.){0,20}.htm\">", RegexOptions.Singleline);
-                //    Match result = regex.Match(content);
-
-                //    if(result.Value.Length < 10)
-                //    {
-                //        Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
-                //        continue;
-                //    }
-
-                //    string reportHref = result.Value.Substring(0, result.Value.IndexOf("\">", 0));
-                //    string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
-                //    string filePath = string.Format("{0}\\{1}", path, reportHref.Split('/').LastOrDefault());
-                //    DownloadContentToFile(reportUrl, filePath);
-                    
-                //}
+                filings.Add(filingInfo);
             }
+
+            string json = JsonConvert.SerializeObject(filings, Newtonsoft.Json.Formatting.Indented);
+
+            string summaryPath = string.Format("c:\\temp\\SEC\\{0}_summary.json", DateTime.Now.ToString("yyyyMMdd"));
+
+            File.WriteAllText(summaryPath, json);
+
+            DataRepository repo = new DataRepository();
+            //Task.Run(async () =>
+            //{
+            //    string jsonContent = File.ReadAllText(@"C:\temp\SEC\20180117_summary.json");
+            //    await repo.MongoInsertJsonAsync(jsonContent);
+            //}).GetAwaiter().GetResult();
 
         }
 
@@ -222,7 +227,6 @@ namespace SECCrawler
         public string IRS { get; set; }
 
     }
-
 
     [JsonObject]
     public class SECFilingInfo
