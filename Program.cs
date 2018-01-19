@@ -29,7 +29,7 @@ namespace SECCrawler
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
             //test only
             //cikInfos = cikInfos.Where(x => x.CIK == 1500217);
-            foreach (var cik in cikInfos)
+            foreach (var cik in cikInfos.Take(3))
             {
                 SECFilingInfo filingInfo = new SECFilingInfo
                 {
@@ -54,11 +54,11 @@ namespace SECCrawler
                 {
                     Filing filing = new Filing();
                     var href = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault();
-                    filing.fileNumber = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number")).FirstOrDefault().Value;
-                    filing.fileNumberHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number-href")).FirstOrDefault().Value;
-                    filing.FilingDate = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-date")).FirstOrDefault().Value;
-                    filing.FilingHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault().Value;
-                    filing.FilingType = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-type")).FirstOrDefault().Value;
+                    filing.fileNumber = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number")).FirstOrDefault().Value.Trim();
+                    filing.fileNumberHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("file-number-href")).FirstOrDefault().Value.Trim();
+                    filing.FilingDate = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-date")).FirstOrDefault().Value.Trim();
+                    filing.FilingHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault().Value.Trim();
+                    filing.FilingType = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-type")).FirstOrDefault().Value.Trim();
                      
                     //get content from filing_href
                     string content = DownloadContent(href.Value);
@@ -95,6 +95,7 @@ namespace SECCrawler
             File.WriteAllText(summaryPath, json);
 
             DataRepository repo = new DataRepository();
+            repo.MongoInsert(filings);
             //Task.Run(async () =>
             //{
             //    string jsonContent = File.ReadAllText(@"C:\temp\SEC\20180117_summary.json");
@@ -215,24 +216,5 @@ namespace SECCrawler
     }
     
     //CIK|Ticker|Name|Exchange|SIC|Business|Incorporated|IRS
-    public class CIKInfo
-    {
-        public long CIK { get; set; }
-        public string Ticker { get; set; }
-        public string Name { get; set; }
-        public string Exchange { get; set; }
-        public string SIC { get; set; }
-        public string Business { get; set; }
-        public string Incorportated { get; set; }
-        public string IRS { get; set; }
 
-    }
-
-    [JsonObject]
-    public class SECFilingInfo
-    {
-        public CIKInfo CompanyInfo { get; set; }
-
-        public List<Filing> Filings { get; set; }
-    }
 }
