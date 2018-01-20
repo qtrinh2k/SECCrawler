@@ -10,7 +10,7 @@ namespace SECCrawler
 
     public class DataRepository
     {
-        public void MongoInsert(List<SECFilingInfo> filingInfos)
+        public async Task MongoInsert(List<SECFilingInfo> filingInfos)
         {
             var connectionString = "mongodb://localhost";
 
@@ -21,7 +21,8 @@ namespace SECCrawler
             {
                 var document = BsonSerializer.Deserialize<BsonDocument>(Newtonsoft.Json.JsonConvert.SerializeObject(fi));
                 var collection = database.GetCollection<BsonDocument>("SECReportDB");
-                collection.ReplaceOne(FilterDefinition<BsonDocument>.Empty, document);
+
+                await collection.InsertOneAsync(document);
             }
 
         }

@@ -29,7 +29,7 @@ namespace SECCrawler
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
             //test only
             //cikInfos = cikInfos.Where(x => x.CIK == 1500217);
-            foreach (var cik in cikInfos.Take(3))
+            foreach (var cik in cikInfos.Take(30))
             {
                 SECFilingInfo filingInfo = new SECFilingInfo
                 {
@@ -95,12 +95,13 @@ namespace SECCrawler
             File.WriteAllText(summaryPath, json);
 
             DataRepository repo = new DataRepository();
+
             repo.MongoInsert(filings);
-            //Task.Run(async () =>
-            //{
-            //    string jsonContent = File.ReadAllText(@"C:\temp\SEC\20180117_summary.json");
-            //    await repo.MongoInsertJsonAsync(jsonContent);
-            //}).GetAwaiter().GetResult();
+            Task.Run(async () =>
+            {
+                await repo.MongoInsert(filings);
+
+            }).GetAwaiter().GetResult();
 
         }
 
