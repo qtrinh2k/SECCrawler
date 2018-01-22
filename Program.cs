@@ -15,21 +15,25 @@ namespace SECCrawler
 {
     class Program
     {
+        const string downloadReportFolder = @"D:\\Projects\\SECReport";
+
         public static void Main(string[] args)
         {
             string baseUrl = "https://www.sec.gov";
 
-            string cikTickerPath = @"C:\Users\Matrix-PC\source\repos\SECCrawler\cik_ticker.csv";
-            string wikiSP500FilePath = @"C:\Users\Matrix-PC\source\repos\SECCrawler\sp500List.txt";
+            string appFolder = @"C:\Users\Matrix-PC\source\repos\SECCrawler";
+            string cikTickerPath = @"cik_ticker.csv";
+            string wikiSP500FilePath = @"sp500List.txt";
             string wikiSP500Content = File.ReadAllText(wikiSP500FilePath);
 
             List<SECFilingInfo> filings = new List<SECFilingInfo>();
 
             var cikInfos = ImportCIKInfo(cikTickerPath);
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
-            //test only
-            //cikInfos = cikInfos.Where(x => x.CIK == 1500217);
-            foreach (var cik in cikInfos.Take(30))
+
+
+            //Parallel.ForEach(cikInfos, (cik) =>
+            foreach(var cik in cikInfos)
             {
                 SECFilingInfo filingInfo = new SECFilingInfo
                 {
@@ -40,7 +44,7 @@ namespace SECCrawler
                 Console.WriteLine("Downloading Ticker={0}, CIK={1}", cik.Ticker, cik.CIK);
                 string downloadFile = GetSECFilling(cik, ReportType.Annual);
 
-                string path = string.Format("c:\\temp\\SEC\\{0}_{1}", cik.Ticker, cik.CIK);
+                string path = string.Format("{0}\\{1}_{2}", downloadReportFolder, cik.Ticker, cik.CIK);
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
@@ -50,7 +54,7 @@ namespace SECCrawler
 
                 //TODO: all entry and go through each entry to store info
                 IEnumerable<XElement> entries = xml.Descendants().Where(x => x.Name.LocalName.Equals("entry"));
-                foreach(XElement entry in entries)
+                Parallel.ForEach(entries, (entry) =>
                 {
                     Filing filing = new Filing();
                     var href = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault();
@@ -59,44 +63,58 @@ namespace SECCrawler
                     filing.FilingDate = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-date")).FirstOrDefault().Value.Trim();
                     filing.FilingHref = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-href")).FirstOrDefault().Value.Trim();
                     filing.FilingType = entry.Descendants().Where(x => x.Name.LocalName.Equals("filing-type")).FirstOrDefault().Value.Trim();
-                     
-                    //get content from filing_href
-                    string content = DownloadContent(href.Value);
 
-                    //search content from report
-                    Regex regex = new Regex("Archives(.)*10(.){0,4}k(.){0,20}.htm\">", RegexOptions.Singleline);
-                    Match result = regex.Match(content);
-
-                    if (result.Value.Length < 10)
-                    {
-                        Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
-                        filing.DownloadStatus = "Fail";
-                        continue;
-                    }
-
-                    string reportHref = result.Value.Substring(0, result.Value.IndexOf("\">", 0));
-                    string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
-                    string filePath = string.Format("{0}\\{1}", path, reportHref.Split('/').LastOrDefault());
-                    DownloadContentToFile(reportUrl, filePath);
-
+                    string filePath = string.Format("{0}\\{1}_{2}.htm", path, filing.FilingDate, filing.FilingType.Replace("\\", "").Replace("/", ""));
                     filing.DownloadReportPath = filePath;
                     filing.DownloadStatus = "Success";
 
-                    filingInfo.Filings.Add(filing);
-                }
+                    if (File.Exists(filePath))
+                    {
+                        Console.WriteLine("File={0} already existed!!!", filePath);
+                    }
+                    else
+                    {
+                        //get content from filing_href
+                        string content = DownloadContent(href.Value);
 
-                filings.Add(filingInfo);
+                        //search content from report
+                        Regex regex = new Regex("Archives(.)*10(.){0,4}k(.){0,20}.htm\">", RegexOptions.Singleline);
+                        Match result = regex.Match(content);
+
+                        if (result.Value.Length < 10)
+                        {
+                            Console.WriteLine("UNABLE TO FIND FILING REPORT!!!");
+                            filing.DownloadStatus = "Fail";
+                        }
+                        else
+                        {
+                            string reportHref = result.Value.Substring(0, result.Value.IndexOf("\">", 0));
+                            string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
+
+                            DownloadContentToFile(reportUrl, filePath);
+                        }
+                    }
+
+                    lock (filingInfo)
+                    {
+                        filingInfo.Filings.Add(filing);
+                    }
+                });
+
+                lock (filings)
+                {
+                    filings.Add(filingInfo);
+                }
             }
 
             string json = JsonConvert.SerializeObject(filings, Newtonsoft.Json.Formatting.Indented);
 
-            string summaryPath = string.Format("c:\\temp\\SEC\\{0}_summary.json", DateTime.Now.ToString("yyyyMMdd"));
+            string summaryPath = string.Format("{0}\\{1}_summary.json", downloadReportFolder, DateTime.Now.ToString("yyyyMMdd"));
 
             File.WriteAllText(summaryPath, json);
 
             DataRepository repo = new DataRepository();
 
-            repo.MongoInsert(filings);
             Task.Run(async () =>
             {
                 await repo.MongoInsert(filings);
@@ -111,7 +129,7 @@ namespace SECCrawler
             //string url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cikInfo.CIK}&type=10-K&dateb=&owner=include&count=10";
             string rssUrl = string.Format("https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={0}&type=10-K%25&dateb=&owner=include&start=0&count=10&output=atom", cikInfo.CIK);
 
-            string path = string.Format("c:\\temp\\SEC\\{0}_{1}", cikInfo.Ticker, cikInfo.CIK);
+            string path = string.Format("{0}\\{1}_{2}", downloadReportFolder, cikInfo.Ticker, cikInfo.CIK);
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
