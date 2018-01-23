@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using SECCrawler;
 
 namespace SECReportWeb.Controllers
 {
@@ -13,22 +14,35 @@ namespace SECReportWeb.Controllers
     [Route("api/SECReport")]
     public class SECReportController : Controller
     {
-        const string _DatabaseName = "StockDB";
-        const string _CollectionName = "SECReport";
+        const string _databaseName = "StockDB";
+        const string _collectionName = "SECReport";
         const string _connectionString = "mongodb://localhost";
 
         // GET: api/SECReport
-        [HttpGet]
-        public IEnumerable<string> GetCompanies()
+        [HttpGet("[action]")]
+        public IEnumerable<CIKInfo> GetCompanyInfo()
         {
-            return new string[] { "value1", "value2" };
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var filterResults = collection
+                .Find(x => x.CompanyInfo.Exchange.Equals("NYSE"))
+                .ToListAsync()
+                .Result;
+
+            return filterResults.Select(x => x.CompanyInfo);
         }
 
-        // GET: api/SECReport
-        [HttpGet]
-        public IEnumerable<string> GetCompanyReports()
+        [HttpGet("[action]")]
+        public CIKInfo GetCompanyInfoByTicker(string ticker)
         {
-            return new string[] { "value1", "value2" };
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var filterResults = collection
+                .Find(x => x.CompanyInfo.Ticker.Equals(ticker, StringComparison.OrdinalIgnoreCase))
+                .ToListAsync()
+                .Result;
+
+            return filterResults.FirstOrDefault().CompanyInfo;
         }
 
         // GET: api/SECReport/5
@@ -59,7 +73,7 @@ namespace SECReportWeb.Controllers
         private IMongoDatabase GetMongoDatabase()
         {
             var client = new MongoClient(_connectionString);
-            var database = client.GetDatabase(_DatabaseName);
+            var database = client.GetDatabase(_databaseName);
 
             return database;
         }
