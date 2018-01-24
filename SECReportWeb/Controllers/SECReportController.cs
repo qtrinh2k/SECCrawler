@@ -10,8 +10,7 @@ using SECCrawler;
 
 namespace SECReportWeb.Controllers
 {
-    [Produces("application/json")]
-    [Route("api/SECReport")]
+    [Route("api/[controller]")]
     public class SECReportController : Controller
     {
         const string _databaseName = "StockDB";
@@ -19,7 +18,7 @@ namespace SECReportWeb.Controllers
         const string _connectionString = "mongodb://localhost";
 
         // GET: api/SECReport
-        [HttpGet("[action]")]
+        [HttpGet("CompanyInfo")]
         public IEnumerable<CIKInfo> GetCompanyInfo()
         {
             var database = GetMongoDatabase();
@@ -32,7 +31,7 @@ namespace SECReportWeb.Controllers
             return filterResults.Select(x => x.CompanyInfo);
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("GetTicker")]
         public CIKInfo GetCompanyInfoByTicker(string ticker)
         {
             var database = GetMongoDatabase();
@@ -45,12 +44,12 @@ namespace SECReportWeb.Controllers
             return filterResults.FirstOrDefault().CompanyInfo;
         }
 
-        // GET: api/SECReport/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET: api/SECReport/5
+        //[HttpGet("{id}", Name = "Get")]
+        //public string Get(int id)
+        //{
+        //    return "value";
+        //}
         
         // POST: api/SECReport
         [HttpPost]
