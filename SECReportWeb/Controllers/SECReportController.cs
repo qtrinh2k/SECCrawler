@@ -18,7 +18,7 @@ namespace SECReportWeb.Controllers
         const string _connectionString = "mongodb://localhost";
 
         // GET: api/SECReport
-        [HttpGet("CompanyInfo")]
+        [HttpGet("GetCompanyInfo")]
         public IEnumerable<CIKInfo> GetCompanyInfo()
         {
             var database = GetMongoDatabase();
@@ -31,13 +31,13 @@ namespace SECReportWeb.Controllers
             return filterResults.Select(x => x.CompanyInfo);
         }
 
-        [HttpGet("GetTicker")]
+        [HttpGet("GetByTicker")]
         public CIKInfo GetCompanyInfoByTicker(string ticker)
         {
             var database = GetMongoDatabase();
             var collection = database.GetCollection<SECFilingInfo>(_collectionName);
             var filterResults = collection
-                .Find(x => x.CompanyInfo.Ticker.Equals(ticker, StringComparison.OrdinalIgnoreCase))
+                .Find(x => x.CompanyInfo.Ticker.Equals(ticker.Trim(), StringComparison.OrdinalIgnoreCase))
                 .ToListAsync()
                 .Result;
 
