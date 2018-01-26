@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SECCrawler", "SECCrawler.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SECReportWeb", "SECReportWeb\SECReportWeb.csproj", "{B3F20B32-709A-4476-8BE6-0C2FB4711C64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAppTests", "WebAppTests\WebAppTests.csproj", "{2196F1B5-1024-4141-98CF-9A71B9F042A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp", "WebApp\WebApp.csproj", "{D4101B48-567F-4370-B28F-369FDA6BDD7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{B3F20B32-709A-4476-8BE6-0C2FB4711C64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3F20B32-709A-4476-8BE6-0C2FB4711C64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3F20B32-709A-4476-8BE6-0C2FB4711C64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2196F1B5-1024-4141-98CF-9A71B9F042A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2196F1B5-1024-4141-98CF-9A71B9F042A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2196F1B5-1024-4141-98CF-9A71B9F042A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2196F1B5-1024-4141-98CF-9A71B9F042A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4101B48-567F-4370-B28F-369FDA6BDD7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4101B48-567F-4370-B28F-369FDA6BDD7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4101B48-567F-4370-B28F-369FDA6BDD7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4101B48-567F-4370-B28F-369FDA6BDD7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
