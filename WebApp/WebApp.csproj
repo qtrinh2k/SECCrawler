@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SECCrawler\SECCrawler.csproj" />
+    <ProjectReference Include="..\SECCrawler.csproj" />
   </ItemGroup>
 
 </Project>

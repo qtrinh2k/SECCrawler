@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SECCrawler.csproj" />
+    <ProjectReference Include="..\WebApp\WebApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
