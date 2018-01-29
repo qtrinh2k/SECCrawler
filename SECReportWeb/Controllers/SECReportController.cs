@@ -18,7 +18,7 @@ namespace SECReportWeb.Controllers
         const string _connectionString = "mongodb://localhost";
 
         // GET: api/SECReport
-        [HttpGet("GetCompanyInfo")]
+        [HttpGet("GetCompanies")]
         public IEnumerable<CIKInfo> GetCompanyInfo()
         {
             var database = GetMongoDatabase();
@@ -32,17 +32,32 @@ namespace SECReportWeb.Controllers
         }
 
         [HttpGet("GetByTicker")]
-        public CIKInfo GetCompanyInfoByTicker(string ticker)
+        public CIKInfo GetByTicker(string ticker)
         {
+            var builder = Builders<BsonDocument>.Filter;
+
             var database = GetMongoDatabase();
             var collection = database.GetCollection<SECFilingInfo>(_collectionName);
             var filterResults = collection
-                .Find(x => x.CompanyInfo.Ticker.Equals(ticker.Trim(), StringComparison.OrdinalIgnoreCase))
+                .Find(x => ticker.Equals(x.CompanyInfo.Ticker))
                 .ToListAsync()
                 .Result;
 
             return filterResults.FirstOrDefault().CompanyInfo;
         }
+        [HttpGet("GetByCIK")]
+        public CIKInfo GetByCIK(string cik)
+        {
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var filterResults = collection
+                .Find(x => x.CompanyInfo.CIK == long.Parse(cik))
+                .ToListAsync()
+                .Result;
+
+            return filterResults.FirstOrDefault().CompanyInfo;
+        }
+
 
         //// GET: api/SECReport/5
         //[HttpGet("{id}", Name = "Get")]
@@ -50,7 +65,7 @@ namespace SECReportWeb.Controllers
         //{
         //    return "value";
         //}
-        
+
         // POST: api/SECReport
         [HttpPost]
         public void Post([FromBody]string value)
