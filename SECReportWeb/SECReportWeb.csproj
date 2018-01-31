@@ -19,7 +19,10 @@
 
   <ItemGroup>
     <!-- Files not to publish (note that the 'dist' subfolders are re-added below) -->
+    <Compile Remove="ClientApp\app\components\secdata\**" />
     <Content Remove="ClientApp\**" />
+    <EmbeddedResource Remove="ClientApp\app\components\secdata\**" />
+    <None Remove="ClientApp\app\components\secdata\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,10 +31,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SECCrawler\SECCrawler.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\app\components\secdata\secreport.component.ts" />
   </ItemGroup>
 
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">

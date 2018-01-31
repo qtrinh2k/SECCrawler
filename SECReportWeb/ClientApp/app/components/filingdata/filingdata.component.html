@@ -1,0 +1,24 @@
+<h1>Public Companies</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<p *ngIf="!companies"><em>Loading...</em></p>
+
+<table class='table' *ngIf="companies">
+    <thead>
+        <tr>
+            <th>Ticker</th>
+            <th>CIK</th>
+            <th>Name</th>
+            <th>Exchange</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let company of companies">
+            <td><a href="api/SECReport/GetByTicker?ticker={{ company.ticker }}">{{ company.ticker }}</a></td>
+            <td>{{ company.cik }}</td>
+            <td>{{ company.name }}</td>
+            <td>{{ company.exchange }}</td>
+        </tr>
+    </tbody>
+</table>

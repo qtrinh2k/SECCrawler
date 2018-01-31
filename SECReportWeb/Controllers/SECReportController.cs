@@ -28,7 +28,7 @@ namespace SECReportWeb.Controllers
                 .ToListAsync()
                 .Result;
 
-            return filterResults.Select(x => x.CompanyInfo);
+            return filterResults.Take(10).Select(x => x.CompanyInfo);
         }
 
         [HttpGet("GetByTicker")]
@@ -45,6 +45,7 @@ namespace SECReportWeb.Controllers
 
             return filterResults.FirstOrDefault().CompanyInfo;
         }
+
         [HttpGet("GetByCIK")]
         public CIKInfo GetByCIK(string cik)
         {
@@ -58,6 +59,17 @@ namespace SECReportWeb.Controllers
             return filterResults.FirstOrDefault().CompanyInfo;
         }
 
+        public SECFilingInfo GetFilingByTicker(string ticker)
+        {
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var filterResults = collection
+                .Find(x => ticker.Equals(x.CompanyInfo.Ticker))
+                .ToListAsync()
+                .Result;
+
+            return filterResults.FirstOrDefault();
+        }
 
         //// GET: api/SECReport/5
         //[HttpGet("{id}", Name = "Get")]
