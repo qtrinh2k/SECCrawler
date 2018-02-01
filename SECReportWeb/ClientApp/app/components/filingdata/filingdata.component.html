@@ -2,7 +2,7 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-<p *ngIf="!companies"><em>Loading...</em></p>
+<!--<p *ngIf="!companies"><em>Loading...</em></p>
 
 <table class='table' *ngIf="companies">
     <thead>
@@ -21,4 +21,9 @@
             <td>{{ company.exchange }}</td>
         </tr>
     </tbody>
-</table>
+</table>-->
+
+<div>
+    <input maxlength='600' title='search' type='text' #searchInput />
+    <button title="Search" type="submit" (click)="searchClick(searchInput.value)">Search</button>
+</div>

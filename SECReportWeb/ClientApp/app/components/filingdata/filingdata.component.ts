@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { Http } from '@angular/http';
+import { isNumeric } from "rxjs/util/isNumeric";
 
 @Component({
     selector: 'filingdata',
@@ -8,6 +9,19 @@ import { Http } from '@angular/http';
 
 export class FilingDataComponent {
     public companies: CIKInfo[];
+    result: string;
+
+    private companyResult: SECFilingInfo;
+
+    searchClick(http: Http, @Inject('BASE_URL') baseUrl: string, searchInput: string)
+    {
+        if (isNumeric(searchInput))
+        {
+            http.get(baseUrl + 'api/SECReport/GetByCIK?cik=' + searchInput).subscribe(result => {
+                this.companyResult = result.json() as SECFilingInfo;
+            }, error => console.error(error));
+        }
+    }
 
     constructor(http: Http, @Inject('BASE_URL') baseUrl: string) {
         http.get(baseUrl + 'api/SECReport/GetCompanies').subscribe(result => {
