@@ -13,17 +13,32 @@ export class FilingDataComponent {
 
     private companyResult: SECFilingInfo;
 
-    searchClick(http: Http, @Inject('BASE_URL') baseUrl: string, searchInput: string)
+    searchClick(searchInput: string)
     {
         if (isNumeric(searchInput))
         {
-            http.get(baseUrl + 'api/SECReport/GetByCIK?cik=' + searchInput).subscribe(result => {
+            this.http.get(this.baseUrl + 'api/SECReport/GetByCIK?cik=' + searchInput).subscribe(result => {
                 this.companyResult = result.json() as SECFilingInfo;
             }, error => console.error(error));
+            console.log("Search by CIK");
+            console.log(this.companyResult);
+        }
+        else if (this.companies.find(x => x.ticker === searchInput))
+        {
+            this.http.get(this.baseUrl + 'api/SECReport/GetByTicker?ticker=' + searchInput).subscribe(result => {
+                this.companyResult = result.json() as SECFilingInfo;
+            }, error => console.error(error));
+
+            console.log("Search by TICKER");
+            console.log(this.companyResult);
+        }
+        else
+        {
+            console.log("Search by CompanyName=" + searchInput);
         }
     }
 
-    constructor(http: Http, @Inject('BASE_URL') baseUrl: string) {
+    constructor(public http: Http, @Inject('BASE_URL') public baseUrl: string) {
         http.get(baseUrl + 'api/SECReport/GetCompanies').subscribe(result => {
             this.companies = result.json() as CIKInfo[];
         }, error => console.error(error));
