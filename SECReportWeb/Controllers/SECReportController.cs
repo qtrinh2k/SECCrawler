@@ -31,6 +31,35 @@ namespace SECReportWeb.Controllers
             return filterResults.Take(10).Select(x => x.CompanyInfo);
         }
 
+        [HttpGet("GetFiling")]
+        public IEnumerable<SECFilingInfo> GetFiling(string q)
+        {
+            long _ = -1;
+            List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
+            if (long.TryParse(q, out _))
+            {
+                var result = GetByCIK(q);
+
+                if (result != null)
+                {
+                    filterResults.Add(result);
+                    return filterResults;
+                }
+            }
+                
+
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            filterResults = collection
+                .Find(x => (q.Equals(x.CompanyInfo.Ticker) ||
+                             x.CompanyInfo.Name.Contains(q)))
+                .ToListAsync()
+                .Result;
+            
+            return filterResults;
+
+        }
+
         [HttpGet("GetByTicker")]
         public CIKInfo GetByTicker(string ticker)
         {
@@ -43,20 +72,20 @@ namespace SECReportWeb.Controllers
                 .ToListAsync()
                 .Result;
 
-            return filterResults.FirstOrDefault().CompanyInfo;
+            return filterResults?.FirstOrDefault()?.CompanyInfo;
         }
 
         [HttpGet("GetByCIK")]
-        public CIKInfo GetByCIK(string cik)
+        public SECFilingInfo GetByCIK(string cik)
         {
             var database = GetMongoDatabase();
             var collection = database.GetCollection<SECFilingInfo>(_collectionName);
-            var filterResults = collection
+            List<SECFilingInfo> filterResults = collection
                 .Find(x => x.CompanyInfo.CIK == long.Parse(cik))
                 .ToListAsync()
                 .Result;
-
-            return filterResults.FirstOrDefault().CompanyInfo;
+            //return filterResults.Any() ? filterResults.FirstOrDefault().CompanyInfo : null;
+            return filterResults?.FirstOrDefault();
         }
 
         public SECFilingInfo GetFilingByTicker(string ticker)
@@ -68,7 +97,7 @@ namespace SECReportWeb.Controllers
                 .ToListAsync()
                 .Result;
 
-            return filterResults.FirstOrDefault();
+            return filterResults?.FirstOrDefault();
         }
 
         //// GET: api/SECReport/5
