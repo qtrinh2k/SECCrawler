@@ -27,6 +27,7 @@ import { FilingDataComponent } from './components/filingdata/filingdata.componen
         RouterModule.forRoot([
             { path: '', redirectTo: 'home', pathMatch: 'full' },
             { path: 'home', component: HomeComponent },
+            { path: 'app', component: AppComponent },
             { path: 'counter', component: CounterComponent },
             { path: 'fetch-data', component: FetchDataComponent },
             { path: 'filing-data', component: FilingDataComponent },
@@ -35,4 +36,34 @@ import { FilingDataComponent } from './components/filingdata/filingdata.componen
     ]
 })
 export class AppModuleShared {
+}
+
+export interface Filing {
+    new (): Filing;
+
+    AccessionNunber: string;
+    fileNumber: string;
+    fileNumberHref: string;
+    FilingDate: string;
+    FilingHref: string;
+    FilingType: string;
+    DownloadReportPath: string;
+    DownloadStatus: string;
+}
+
+export interface CIKInfo {
+    cik: number;
+    ticker: string;
+    name: string;
+    exchange: string;
+    sic: string;
+    business: string;
+    incorportated: string;
+    irs: string;
+}
+
+export interface SECFilingInfo {
+    Id: string;
+    CompanyInfo: CIKInfo;
+    Filings: Filing[];
 }

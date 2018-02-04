@@ -27,3 +27,32 @@
     <input maxlength='600' title='search' type='text' #searchInput />
     <button title="Search" type="submit" (click)="searchClick(searchInput.value)">Search</button>
 </div>
+<div>
+    <table class='table' *ngIf="companyresults">
+        <thead>
+            <tr>
+                <th>Ticker</th>
+                <th>CIK</th>
+                <th>Name</th>
+                <th>Exchange</th>
+                <th>Filings</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let result of companyresults">
+                <td>{{ result.companyInfo.ticker }}</td>
+                <td>{{ result.companyInfo.cik }}</td>
+                <td>{{ result.companyInfo.name }}</td>
+                <td>{{ result.companyInfo.exchange }}</td>
+                <td>
+                    <select [(ngModel)]="filingDate" (change)="changeOption();">
+                        <option selected="" value="== 10-K =="></option>
+                        <option *ngFor="let subItem of result['filings']" [ngValue]="subItem.filingDate">
+                            {{ subItem.filingDate }}
+                        </option>
+                    </select>                   
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

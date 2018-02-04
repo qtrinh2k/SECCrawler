@@ -34,19 +34,14 @@ namespace SECReportWeb.Controllers
         [HttpGet("GetFiling")]
         public IEnumerable<SECFilingInfo> GetFiling(string q)
         {
-            long _ = -1;
             List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
-            if (long.TryParse(q, out _))
-            {
-                var result = GetByCIK(q);
 
-                if (result != null)
-                {
-                    filterResults.Add(result);
-                    return filterResults;
-                }
+            if (long.TryParse(q, out _) &&
+                GetByCIK(q) is SECFilingInfo result)
+            {
+                filterResults.Add(result);
+                return filterResults;
             }
-                
 
             var database = GetMongoDatabase();
             var collection = database.GetCollection<SECFilingInfo>(_collectionName);
@@ -57,7 +52,6 @@ namespace SECReportWeb.Controllers
                 .Result;
             
             return filterResults;
-
         }
 
         [HttpGet("GetByTicker")]
@@ -73,6 +67,23 @@ namespace SECReportWeb.Controllers
                 .Result;
 
             return filterResults?.FirstOrDefault()?.CompanyInfo;
+        }
+
+        [HttpGet("SearchTicker")]
+        public IEnumerable<string> SearchTicker(string term)
+        {           
+            List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
+
+            var database = GetMongoDatabase();
+            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            filterResults = collection
+                .Find(x => (term.Equals(x.CompanyInfo.Ticker) ||
+                             x.CompanyInfo.Name.Contains(term)))
+                .ToListAsync()
+                .Result;
+
+            var results = filterResults.Select(x => string.Format($"{x.CompanyInfo.Ticker} -{x.CompanyInfo.Name}"));
+            return results;
         }
 
         [HttpGet("GetByCIK")]
