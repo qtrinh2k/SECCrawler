@@ -2,15 +2,15 @@
 <div class="col-sm-8 col-md-4 text-right">
     <div class="form-group">
         <div class="input-group">
-            <input class="form-control" *ngIf="flag" type="text" [(ngModel)]="searchInput" (keyup)="searchClick(searchInput)" />
-            <input class="form-control" [(ngModel)]="searchInput" disabled *ngIf="!flag" type="text" />
+            <input class="form-control" *ngIf="flag" type="text" [(ngModel)]="searchTerm" (keyup)="searchClick(searchTerm)" />
+            <input class="form-control" [(ngModel)]="searchTerm" disabled *ngIf="!flag" type="text" />
 
         </div>
     </div>
     <div class="search-result" *ngIf="flag">
         <ul>
             <li *ngFor="let stock of stockResults | async">
-                <a (click)="onselectCompany(stock)">{{stock.Ticker}}- {{stock.Name}}</a>
+                <a (click)="onselectCompany(stock)">{{stock.Ticker}}-{{stock.Name}}</a>
             </li>
         </ul>
     </div>

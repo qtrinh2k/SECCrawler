@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ClientApp\app\components\app\_service\search.service.ts" />
     <None Remove="Properties\PublishProfiles\FolderProfile1.pubxml" />
   </ItemGroup>
 
@@ -35,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\app\components\app\_service\search-company.service.ts" />
     <TypeScriptCompile Include="ClientApp\app\components\app\_service\search.service.ts" />
   </ItemGroup>
 

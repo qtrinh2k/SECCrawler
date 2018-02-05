@@ -69,8 +69,8 @@ namespace SECReportWeb.Controllers
             return filterResults?.FirstOrDefault()?.CompanyInfo;
         }
 
-        [HttpGet("SearchTicker")]
-        public IEnumerable<string> SearchTicker(string term)
+        [HttpGet("SearchStock")]
+        public IEnumerable<string> SearchStock(string term)
         {           
             List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
 
