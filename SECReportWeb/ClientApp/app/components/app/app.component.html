@@ -1,17 +1,10 @@
-<label class="col-sm-4 col-md-8 text-right control-label vertical-label" for="inputPassword3"> Select Client Name</label>
-<div class="col-sm-8 col-md-4 text-right">
-    <div class="form-group">
-        <div class="input-group">
-            <input class="form-control" *ngIf="flag" type="text" [(ngModel)]="searchTerm" (keyup)="searchClick(searchTerm)" />
-            <input class="form-control" [(ngModel)]="searchTerm" disabled *ngIf="!flag" type="text" />
-
+<div class='container-fluid'>
+    <div class='row'>
+        <div class='col-sm-3'>
+            <nav-menu></nav-menu>
+        </div>
+        <div class='col-sm-9 body-content'>
+            <router-outlet></router-outlet>
         </div>
     </div>
-    <div class="search-result" *ngIf="flag">
-        <ul>
-            <li *ngFor="let stock of stockResults | async">
-                <a (click)="onselectCompany(stock)">{{stock.Ticker}}-{{stock.Name}}</a>
-            </li>
-        </ul>
-    </div>
-</div>  
+</div>

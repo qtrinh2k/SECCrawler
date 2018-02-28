@@ -31,8 +31,6 @@ namespace SECCrawler
             var cikInfos = ImportCIKInfo(cikTickerPath);
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
 
-
-            //Parallel.ForEach(cikInfos, (cik) =>
             foreach(var cik in cikInfos)
             {
                 SECFilingInfo filingInfo = new SECFilingInfo

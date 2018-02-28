@@ -32,12 +32,15 @@ namespace SECReportWeb.Controllers
         }
 
         [HttpGet("GetFiling")]
-        public IEnumerable<SECFilingInfo> GetFiling(string q)
+        public List<SECFilingInfo> GetFiling(string query)
         {
             List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
 
-            if (long.TryParse(q, out _) &&
-                GetByCIK(q) is SECFilingInfo result)
+            if (string.IsNullOrEmpty(query))
+                return null;
+
+            if (long.TryParse(query, out _) &&
+                GetByCIK(query) is SECFilingInfo result)
             {
                 filterResults.Add(result);
                 return filterResults;
@@ -45,13 +48,15 @@ namespace SECReportWeb.Controllers
 
             var database = GetMongoDatabase();
             var collection = database.GetCollection<SECFilingInfo>(_collectionName);
-            filterResults = collection
-                .Find(x => (q.Equals(x.CompanyInfo.Ticker) ||
-                             x.CompanyInfo.Name.Contains(q)))
-                .ToListAsync()
-                .Result;
-            
-            return filterResults;
+            if (collection == null)
+                throw new NullReferenceException("Collection is NULL");
+
+            var findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Ticker == query);
+            if(!findResults.Any())
+            {
+                findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
+            }
+            return findResults.ToList();        
         }
 
         [HttpGet("GetByTicker")]
