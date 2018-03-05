@@ -10,8 +10,9 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using MongoDB.Bson.Serialization.Attributes;
+using DataRepository;
 
-namespace SECCrawler
+namespace FilingCrawler
 {
     class Program
     {
@@ -31,7 +32,7 @@ namespace SECCrawler
             var cikInfos = ImportCIKInfo(cikTickerPath);
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
 
-            foreach(var cik in cikInfos)
+            foreach (var cik in cikInfos)
             {
                 SECFilingInfo filingInfo = new SECFilingInfo
                 {
@@ -111,7 +112,7 @@ namespace SECCrawler
 
             File.WriteAllText(summaryPath, json);
 
-            DataRepository repo = new DataRepository();
+            StockDBRepository repo = new StockDBRepository();
 
             Task.Run(async () =>
             {
@@ -140,7 +141,7 @@ namespace SECCrawler
                     Console.WriteLine(rssUrl);
                     client.DownloadFile(rssUrl, summaryFile);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine("Error for {0}-{1}", cikInfo.Ticker, cikInfo.CIK);
                     Console.WriteLine(ex.Message);
@@ -231,7 +232,4 @@ namespace SECCrawler
             return null;
         }
     }
-    
-    //CIK|Ticker|Name|Exchange|SIC|Business|Incorporated|IRS
-
 }

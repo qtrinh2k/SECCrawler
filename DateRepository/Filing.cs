@@ -1,4 +1,4 @@
-﻿namespace SECCrawler
+﻿namespace DataRepository
 {
     using System.Collections.Generic;
     using Newtonsoft.Json;

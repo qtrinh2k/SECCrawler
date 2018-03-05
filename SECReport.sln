@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SECReportWeb", "SECReportWe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReportTests", "ReportTests\ReportTests.csproj", "{20991A29-AE12-4C0F-A259-E272914F9B7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataRepository", "DateRepository\DataRepository.csproj", "{894B3E5D-8392-40BA-A9A1-3D1329E699A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilingCrawler", "FilingCrawler\FilingCrawler.csproj", "{5A0F7E38-4199-4B3D-874E-6B37CA888366}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{20991A29-AE12-4C0F-A259-E272914F9B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20991A29-AE12-4C0F-A259-E272914F9B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20991A29-AE12-4C0F-A259-E272914F9B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{894B3E5D-8392-40BA-A9A1-3D1329E699A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{894B3E5D-8392-40BA-A9A1-3D1329E699A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{894B3E5D-8392-40BA-A9A1-3D1329E699A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{894B3E5D-8392-40BA-A9A1-3D1329E699A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A0F7E38-4199-4B3D-874E-6B37CA888366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A0F7E38-4199-4B3D-874E-6B37CA888366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A0F7E38-4199-4B3D-874E-6B37CA888366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A0F7E38-4199-4B3D-874E-6B37CA888366}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

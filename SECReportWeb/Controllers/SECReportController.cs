@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using SECCrawler;
+using DataRepository;
 
 namespace SECReportWeb.Controllers
 {
@@ -16,7 +16,12 @@ namespace SECReportWeb.Controllers
         const string _databaseName = "StockDB";
         const string _collectionName = "SECReport";
         const string _connectionString = "mongodb://localhost";
+        StockDBRepository _stockDBRepository = null;
 
+        public SECReportController()
+        {
+            _stockDBRepository = new StockDBRepository();
+        }
         // GET: api/SECReport
         [HttpGet("GetCompanies")]
         public IEnumerable<CIKInfo> GetCompanyInfo()
@@ -34,29 +39,31 @@ namespace SECReportWeb.Controllers
         [HttpGet("GetFiling")]
         public List<SECFilingInfo> GetFiling(string query)
         {
-            List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
+            //List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
 
-            if (string.IsNullOrEmpty(query))
-                return null;
+            //if (string.IsNullOrEmpty(query))
+            //    return null;
 
-            if (long.TryParse(query, out _) &&
-                GetByCIK(query) is SECFilingInfo result)
-            {
-                filterResults.Add(result);
-                return filterResults;
-            }
+            //if (long.TryParse(query, out _) &&
+            //    GetByCIK(query) is SECFilingInfo result)
+            //{
+            //    filterResults.Add(result);
+            //    return filterResults;
+            //}
 
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
-            if (collection == null)
-                throw new NullReferenceException("Collection is NULL");
+            //var database = GetMongoDatabase();
+            //var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            //if (collection == null)
+            //    throw new NullReferenceException("Collection is NULL");
 
-            var findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Ticker == query);
-            if(!findResults.Any())
-            {
-                findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
-            }
-            return findResults.ToList();        
+            //var findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Ticker == query);
+            //if(!findResults.Any())
+            //{
+            //    findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
+            //}
+            //return findResults.ToList();        
+
+            return _stockDBRepository.SearchByTerm(query);
         }
 
         [HttpGet("GetByTicker")]
