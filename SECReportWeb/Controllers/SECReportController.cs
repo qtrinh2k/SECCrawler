@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using DataRepository;
+using System.Diagnostics.Tracing;
 
 namespace SECReportWeb.Controllers
 {
@@ -24,45 +25,21 @@ namespace SECReportWeb.Controllers
         }
         // GET: api/SECReport
         [HttpGet("GetCompanies")]
-        public IEnumerable<CIKInfo> GetCompanyInfo()
+        public IActionResult GetCompanyInfo()
         {
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var collection = _stockDBRepository.GetMongoCollection<SECFilingInfo>();
+
             var filterResults = collection
                 .Find(x => x.CompanyInfo.Exchange.Equals("NYSE"))
                 .ToListAsync()
                 .Result;
 
-            return filterResults.Take(10).Select(x => x.CompanyInfo);
+            return Ok(filterResults.Take(10).Select(x => x.CompanyInfo));
         }
 
         [HttpGet("GetFiling")]
         public List<SECFilingInfo> GetFiling(string query)
         {
-            //List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
-
-            //if (string.IsNullOrEmpty(query))
-            //    return null;
-
-            //if (long.TryParse(query, out _) &&
-            //    GetByCIK(query) is SECFilingInfo result)
-            //{
-            //    filterResults.Add(result);
-            //    return filterResults;
-            //}
-
-            //var database = GetMongoDatabase();
-            //var collection = database.GetCollection<SECFilingInfo>(_collectionName);
-            //if (collection == null)
-            //    throw new NullReferenceException("Collection is NULL");
-
-            //var findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Ticker == query);
-            //if(!findResults.Any())
-            //{
-            //    findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
-            //}
-            //return findResults.ToList();        
-
             return _stockDBRepository.SearchByTerm(query);
         }
 
@@ -71,8 +48,7 @@ namespace SECReportWeb.Controllers
         {
             var builder = Builders<BsonDocument>.Filter;
 
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var collection = _stockDBRepository.GetMongoCollection<SECFilingInfo>();
             var filterResults = collection
                 .Find(x => ticker.Equals(x.CompanyInfo.Ticker))
                 .ToListAsync()
@@ -81,28 +57,40 @@ namespace SECReportWeb.Controllers
             return filterResults?.FirstOrDefault()?.CompanyInfo;
         }
 
+        [HttpGet("GetLatestCompanyFiling")]
+        public IActionResult GetLatestCompanyFiling()
+        {
+            DateTime fromDate = DateTime.Now.AddMonths(-3);
+            try
+            {
+                return base.Ok(_stockDBRepository.GetLatestCompanyFiling(fromDate).Take(20));
+            }
+            catch
+            {
+                return BadRequest("NO RESULT FOUND!!!");
+            }
+        }
+
+
         [HttpGet("SearchStock")]
-        public IEnumerable<string> SearchStock(string term)
+        public IActionResult SearchStock(string term)
         {           
             List<SECFilingInfo> filterResults = new List<SECFilingInfo>();
 
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var collection = _stockDBRepository.GetMongoCollection<SECFilingInfo>();
             filterResults = collection
                 .Find(x => (term.Equals(x.CompanyInfo.Ticker) ||
                              x.CompanyInfo.Name.Contains(term)))
                 .ToListAsync()
                 .Result;
 
-            var results = filterResults.Select(x => string.Format($"{x.CompanyInfo.Ticker} -{x.CompanyInfo.Name}"));
-            return results;
+            return Ok(filterResults.Select(x => string.Format($"{x.CompanyInfo.Ticker} -{x.CompanyInfo.Name}")));
         }
 
         [HttpGet("GetByCIK")]
         public SECFilingInfo GetByCIK(string cik)
         {
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var collection = _stockDBRepository.GetMongoCollection<SECFilingInfo>();
             List<SECFilingInfo> filterResults = collection
                 .Find(x => x.CompanyInfo.CIK == long.Parse(cik))
                 .ToListAsync()
@@ -113,8 +101,7 @@ namespace SECReportWeb.Controllers
 
         public SECFilingInfo GetFilingByTicker(string ticker)
         {
-            var database = GetMongoDatabase();
-            var collection = database.GetCollection<SECFilingInfo>(_collectionName);
+            var collection = _stockDBRepository.GetMongoCollection<SECFilingInfo>();
             var filterResults = collection
                 .Find(x => ticker.Equals(x.CompanyInfo.Ticker))
                 .ToListAsync()
@@ -122,13 +109,6 @@ namespace SECReportWeb.Controllers
 
             return filterResults?.FirstOrDefault();
         }
-
-        //// GET: api/SECReport/5
-        //[HttpGet("{id}", Name = "Get")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
 
         // POST: api/SECReport
         [HttpPost]
@@ -146,14 +126,6 @@ namespace SECReportWeb.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
-        }
-
-        private IMongoDatabase GetMongoDatabase()
-        {
-            var client = new MongoClient(_connectionString);
-            var database = client.GetDatabase(_databaseName);
-
-            return database;
         }
     }
 }

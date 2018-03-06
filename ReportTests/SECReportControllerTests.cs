@@ -38,5 +38,13 @@ namespace ReportTests
             Assert.Equal(result.Count(), 0);
 
         }
+
+        [Fact]
+        public void GetLastestFilingTest()
+        {
+            SECReportController c = new SECReportController();
+            var result = c.GetLatestCompanyFiling();
+            Assert.NotNull(result);
+        }
     }
 }

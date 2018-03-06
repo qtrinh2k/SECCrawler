@@ -15,6 +15,7 @@
         public string FilingDate { get; set; }
         public string FilingHref { get; set; }
         public string FilingType { get; set; }
+        public string ReportOriginalUrl { get; set; }
         public string DownloadReportPath { get; set; }
         public string DownloadStatus { get; set; }
     }
@@ -37,6 +38,8 @@
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        public string _id { get; set; }
+
         public string Id { get; set; }
 
         public CIKInfo CompanyInfo { get; set; }

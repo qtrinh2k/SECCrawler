@@ -38,10 +38,12 @@ namespace DataRepository
             if (collection == null)
                 throw new NullReferenceException("Collection is NULL");
 
-            var findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Ticker == query);
+            var findResults = collection.AsQueryable()
+                                    .Where(x => x.CompanyInfo.Ticker.ToLower() == query.ToLower());
             if (!findResults.Any())
             {
-                findResults = collection.AsQueryable().Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
+                findResults = collection.AsQueryable()
+                                    .Where(x => x.CompanyInfo.Name.ToLower().Contains((query.ToLower())));
             }
             return findResults.ToList();
 
@@ -58,7 +60,28 @@ namespace DataRepository
 
             return filterResults?.FirstOrDefault();
         }
-#endregion
+
+        public List<SECFilingInfo> GetLatestCompanyFiling(DateTime startDate)
+        {
+            var collection = this.GetMongoCollection<SECFilingInfo>();
+            List<SECFilingInfo> latestFiling = new List<SECFilingInfo>();
+            foreach(var result in collection.AsQueryable())
+            {
+                DateTime resultDate;
+                if (result.Filings.Any(x => DateTime.TryParse(x.FilingDate, out resultDate) && (resultDate >= startDate)))
+                {
+                    var filings = result.Filings.Where(x => DateTime.TryParse(x.FilingDate, out resultDate) && (resultDate >= startDate));
+                    latestFiling.Add(new SECFilingInfo
+                    {
+                        CompanyInfo = result.CompanyInfo,
+                        Filings = filings.ToList()
+                    });
+                }
+            }
+
+            return latestFiling;
+        }
+        #endregion
 
         #region Write to database
 

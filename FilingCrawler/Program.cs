@@ -89,7 +89,7 @@ namespace FilingCrawler
                         {
                             string reportHref = result.Value.Substring(0, result.Value.IndexOf("\">", 0));
                             string reportUrl = string.Format("{0}/{1}", baseUrl, reportHref);
-
+                            filing.ReportOriginalUrl = reportUrl;
                             DownloadContentToFile(reportUrl, filePath);
                         }
                     }

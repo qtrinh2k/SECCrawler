@@ -52,7 +52,7 @@
             </div>
             <!-- List group -->
             <ul class="list-group">
-                <li class="list-group-item" *ngFor="let subItem of result['filings']"><a href="{{ subItem.filingHref }}">{{ subItem.filingDate }}-10-K</a></li>
+                <li class="list-group-item" *ngFor="let subItem of result['filings']"><a href="{{ subItem.reportOriginalUrl }}" target="_blank">{{ subItem.filingDate }}-10-K</a></li>
             </ul> 
         </div>
     </div>

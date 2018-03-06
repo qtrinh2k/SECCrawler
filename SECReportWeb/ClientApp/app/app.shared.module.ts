@@ -47,6 +47,7 @@ export interface Filing {
     FilingDate: string;
     FilingHref: string;
     FilingType: string;
+    ReportOriginalUrl: string;
     DownloadReportPath: string;
     DownloadStatus: string;
 }
