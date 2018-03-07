@@ -10,6 +10,7 @@ import { HomeComponent } from './components/home/home.component';
 import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
 import { FilingDataComponent } from './components/filingdata/filingdata.component';
+import { PagerService } from './components/services/PagerService';
 
 @NgModule({
     declarations: [
@@ -33,7 +34,10 @@ import { FilingDataComponent } from './components/filingdata/filingdata.componen
             { path: 'filing-data', component: FilingDataComponent },
             { path: '**', redirectTo: 'home' }
         ])
-    ]
+    ],
+    providers: [
+        PagerService
+    ]    
 })
 export class AppModuleShared {
 }
