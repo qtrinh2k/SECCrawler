@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-using SECReportWeb.Controllers;
 
 namespace ReportTests
 {
+    using SECReportWeb.Controllers;
+    using System.Linq;
+    using Xunit;
+
     public class SECReportControllerTests
     {
         [Fact]
@@ -34,7 +33,6 @@ namespace ReportTests
 
             query = "foobar";
             result = c.GetFiling(query);
-            Assert.Null(result);
             Assert.Equal(result.Count(), 0);
 
         }

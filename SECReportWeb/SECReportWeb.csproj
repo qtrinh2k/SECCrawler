@@ -9,9 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Angular2-Template-for-MVC-and-WebAPI" Version="1.0.0" />
+    <PackageReference Include="IEXTradingApi" Version="1.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.5.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\app\components\home\home.component.spec.ts" />
     <None Remove="ClientApp\app\components\services\PagerService.ts" />
     <None Remove="Properties\PublishProfiles\FolderProfile1.pubxml" />
   </ItemGroup>
@@ -43,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\app\components\home\home.component.spec.ts" />
     <TypeScriptCompile Include="ClientApp\app\components\services\PagerService.ts" />
   </ItemGroup>
 

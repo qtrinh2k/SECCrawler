@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
-using System.Net;
-using System.Xml;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
-using MongoDB.Bson.Serialization.Attributes;
-using DataRepository;
-
-namespace FilingCrawler
+﻿namespace FilingCrawler
 {
+    using DataRepository;
+    using IEXApiHandler;
+    using IEXApiHandler.IEXData;
+    using IEXApiHandler.IEXData.Stock;
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using System.Xml.Linq;
+
     class Program
     {
         const string downloadReportFolder = @"D:\\Projects\\SECReport";
@@ -21,16 +21,22 @@ namespace FilingCrawler
         public static void Main(string[] args)
         {
             string baseUrl = "https://www.sec.gov";
-
-            string appFolder = @"C:\Users\Matrix-PC\source\repos\SECCrawler";
             string cikTickerPath = @"cik_ticker.csv";
             string wikiSP500FilePath = @"sp500List.txt";
             string wikiSP500Content = File.ReadAllText(wikiSP500FilePath);
 
-            List<SECFilingInfo> filings = new List<SECFilingInfo>();
-
             var cikInfos = ImportCIKInfo(cikTickerPath);
             cikInfos = cikInfos.Where(x => Regex.Match(wikiSP500Content, x.CIK.ToString()).Success);
+
+            //InsertCompanyData(cikInfos);
+            //IEXApiSandbox.InsertIEXData(cikInfos, new List<IEXDataType> { IEXDataType.company, IEXDataType.stats });
+            IEXApiSandbox.InsertChartData(cikInfos);
+        }
+        
+        private static void InsertFilings(IEnumerable<CIKInfo>cikInfos)
+        {
+            string baseUrl = "https://www.sec.gov";
+            List<SECFilingInfo> filings = new List<SECFilingInfo>();
 
             foreach (var cik in cikInfos)
             {
@@ -112,14 +118,13 @@ namespace FilingCrawler
 
             File.WriteAllText(summaryPath, json);
 
-            StockDBRepository repo = new StockDBRepository();
+            SECFilingCollection repo = new SECFilingCollection();
 
             Task.Run(async () =>
             {
                 await repo.MongoInsert(filings);
 
             }).GetAwaiter().GetResult();
-
         }
 
         private static string GetSECFilling(CIKInfo cikInfo, ReportType reportType)

@@ -8,14 +8,12 @@ using MongoDB.Bson.Serialization;
 
 namespace DataRepository
 {
-    public class StockDBRepository : MongoDBRepository
+    public class SECFilingCollection : MongoDBRepository<SECFilingInfo>
     {
-        const string _databaseName = "StockDB";
         const string _collectionName = "SECReport";
-        const string _connectionString = "mongodb://localhost";
 
-        public StockDBRepository():
-            base(_connectionString, _databaseName, _collectionName)
+        public SECFilingCollection():
+            base(_collectionName)
         {            
         }
 
@@ -34,7 +32,7 @@ namespace DataRepository
                 return filterResults;
             }
 
-            var collection = this.GetMongoCollection<SECFilingInfo>();
+            var collection = this.DbCollection;
             if (collection == null)
                 throw new NullReferenceException("Collection is NULL");
 
@@ -51,9 +49,7 @@ namespace DataRepository
 
         public SECFilingInfo GetByCIK(string cik)
         {
-            var collection = this.GetMongoCollection<SECFilingInfo>();
-
-            List<SECFilingInfo> filterResults = collection
+            List<SECFilingInfo> filterResults = this.DbCollection
                 .Find(x => x.CompanyInfo.CIK == long.Parse(cik))
                 .ToListAsync()
                 .Result;
@@ -63,9 +59,9 @@ namespace DataRepository
 
         public List<SECFilingInfo> GetLatestCompanyFiling(DateTime startDate)
         {
-            var collection = this.GetMongoCollection<SECFilingInfo>();
+
             List<SECFilingInfo> latestFiling = new List<SECFilingInfo>();
-            foreach(var result in collection.AsQueryable())
+            foreach(var result in this.DbCollection.AsQueryable())
             {
                 DateTime resultDate;
                 if (result.Filings.Any(x => DateTime.TryParse(x.FilingDate, out resultDate) && (resultDate >= startDate)))
@@ -87,31 +83,13 @@ namespace DataRepository
 
         public async Task MongoInsert(List<SECFilingInfo> filingInfos)
         {
-            var database = GetMongoDatabase();
-
             foreach (SECFilingInfo fi in filingInfos)
             {
-                var document = BsonSerializer.Deserialize<BsonDocument>(Newtonsoft.Json.JsonConvert.SerializeObject(fi));
-                var collection = database.GetCollection<BsonDocument>(_collectionName);
-                await collection.InsertOneAsync(document);
-            }
-        }
-
-        public async Task MongoInsertJsonAsync(string jsonContent)
-        {
-            var database = GetMongoDatabase();
-
-            using (var jsonReader = new MongoDB.Bson.IO.JsonReader(jsonContent))
-            {
-                var serializer = new MongoDB.Bson.Serialization.Serializers.BsonArraySerializer();
-                var rootReader = BsonDeserializationContext.CreateRoot(jsonReader);
-                var bsonArray = serializer.Deserialize(rootReader);
-                var collection = database.GetCollection<BsonDocument>(_collectionName);
-                await collection.InsertOneAsync(bsonArray.AsBsonDocument);
+                //var document = BsonSerializer.Deserialize<BsonDocument>(Newtonsoft.Json.JsonConvert.SerializeObject(fi));
+                await this.DbCollection.InsertOneAsync(fi);
             }
         }
         #endregion
-
 
     }
 }

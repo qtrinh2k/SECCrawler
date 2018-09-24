@@ -1,5 +1,5 @@
 {
-  "name": "SECReportWeb",
+  "name": "secreportweb",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -68,5 +68,9 @@
   "dependencies": {
     "@types/underscore": "^1.8.7",
     "underscore": "^1.8.3"
-  }
+  },
+  "main": "webpack.config.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
