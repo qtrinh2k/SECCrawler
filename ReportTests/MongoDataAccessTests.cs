@@ -4,14 +4,15 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Xunit;
+using NUnit.Framework;
 
 namespace ReportTests
 {
 
+    [TestFixture]
     public class MongoDataAccessTests
     {
-        [Fact]
+        [Test]
         public void GetIEXData()
         {
             var comp = new MongoDBRepository<Company>("Company");

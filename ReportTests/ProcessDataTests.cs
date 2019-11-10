@@ -7,11 +7,12 @@
     using MongoDB.Driver;
     using System.Collections.Generic;
     using System.Linq;
-    using Xunit;
+    using NUnit.Framework;
 
+    [TestFixture]
     public class ProcessDataTests
     {
-        [Fact]
+        [Test]
         public void BatchProcessSymbolsTest()
         {
             //getting list of company
@@ -27,7 +28,7 @@
             repo.MongoInsertMany(results.Values.Select(x => x.Company).Distinct().ToList()).Wait();
         }
 
-        [Fact]
+        [Test]
         public void BatchProcessSymbolsManyAsyncTest()
         {
             //getting list of company
@@ -45,7 +46,7 @@
         }
 
 
-        [Fact]
+        [Test]
         public void UpdateDataTest()
         {
             //insert to db
@@ -60,7 +61,7 @@
             repo.MongoUpsert(company).Wait();
         }
 
-        [Fact]
+        [Test]
         public void GetCompanyInfoTest()
         {
             CompanyCollection repo = new CompanyCollection();

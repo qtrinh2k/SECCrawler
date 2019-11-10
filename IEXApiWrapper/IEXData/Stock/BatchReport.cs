@@ -21,5 +21,8 @@ namespace IEXApiHandler.IEXData.Stock
 
         [JsonProperty("stats")]
         public Stat Stat { get; set; }
+
+        [JsonProperty("financials")]
+        public Financials Financials { get; set; }
     }
 }

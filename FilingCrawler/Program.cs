@@ -13,7 +13,7 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Xml.Linq;
-
+   
     class Program
     {
         const string downloadReportFolder = @"D:\\Projects\\SECReport";
@@ -30,7 +30,12 @@
 
             //InsertCompanyData(cikInfos);
             //IEXApiSandbox.InsertIEXData(cikInfos, new List<IEXDataType> { IEXDataType.company, IEXDataType.stats });
-            IEXApiSandbox.InsertChartData(cikInfos);
+            //IEXApiSandbox.InsertChartData(cikInfos);
+            IEXApiSandbox.InsertBatch(cikInfos,
+                new List<IEXDataType> { IEXDataType.company, IEXDataType.stats, IEXDataType.financials },
+                ChartOption._1d,
+                itemCount: 10,
+                period: Period.Annual);
         }
         
         private static void InsertFilings(IEnumerable<CIKInfo>cikInfos)

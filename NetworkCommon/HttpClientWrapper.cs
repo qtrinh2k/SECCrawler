@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace IEXApiHandler
+﻿namespace NetworkCommon
 {
-    public class HttpClientHandler
+    using Newtonsoft.Json.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+
+    public class HttpClientWrapper
     {
         public async Task<string> GetString(string url)
         {

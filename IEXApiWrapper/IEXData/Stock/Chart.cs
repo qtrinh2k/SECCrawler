@@ -67,10 +67,11 @@ namespace IEXApiHandler.IEXData.Stock
     
     public class Chart
     {
-        [BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid _id { get; set; } = Guid.NewGuid();
-        public Guid companyId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; } = ObjectId.GenerateNewId();
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId companyId { get; set; }
         public string date { get; set; }
         public float? open { get; set; }
         public float? high { get; set; }

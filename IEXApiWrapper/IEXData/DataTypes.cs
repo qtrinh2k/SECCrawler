@@ -10,6 +10,7 @@ namespace IEXApiHandler.IEXData
         news,
         quote,
         stats,
-        company
+        company,
+        financials
     }
 }

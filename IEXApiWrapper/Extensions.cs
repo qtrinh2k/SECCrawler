@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Web;
 namespace IEXApiHandler
 {
     using IEXApiHandler.IEXData;
@@ -23,5 +23,6 @@ namespace IEXApiHandler
         {
             return string.Join(delimeter, value);
         }
+
     }
 }

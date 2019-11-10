@@ -8,10 +8,12 @@ namespace IEXApiHandler.IEXData.Stock
 {
     public class Quote
     {
-        [BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid _id { get; set; } = Guid.NewGuid();
-        public Guid companyId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; } = ObjectId.GenerateNewId();
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId companyId { get; set; }
+
         public string symbol { get; set; }
         public string companyName { get; set; }
         public string primaryExchange { get; set; }

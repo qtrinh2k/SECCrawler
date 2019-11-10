@@ -20,10 +20,12 @@ namespace IEXApiHandler.IEXData.Stock
 
     public class Financial
     {
-        [BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid _id { get; set; } = Guid.NewGuid();
-        public Guid companyId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; } = ObjectId.GenerateNewId();
+
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId companyId { get; set; }
+
         public double? cashChange { get; set; }
         public double? shareholderEquity { get; set; }
         public double? totalDebt { get; set; }

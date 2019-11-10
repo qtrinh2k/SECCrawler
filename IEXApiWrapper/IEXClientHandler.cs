@@ -1,51 +1,150 @@
 ﻿namespace IEXApiHandler
 {
+    using NetworkCommon;
     using IEXApiHandler.IEXData;
     using IEXApiHandler.IEXData.Stock;
     using System;
     using System.Collections.Generic;
-
-    public class IEXClientHandler : HttpClientHandler
+    using System.IO;
+    using System.Linq;
+    public enum IEXRequestType
     {
-        readonly string _batchReportUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/batch?types={1}&range={2}&last={3}";
-        readonly string _batchReportMultiSymbolsUrlFormat = "https://api.iextrading.com/1.0/stock/market/batch?symbols={0}&types={1}&range={2}&last={3}";
-        readonly string _reportUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/financials?period={1}";
-        readonly string _companyUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/company";
-        readonly string _chartUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/chart/{1}";
-        readonly string _keyStatsUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/stats";
-        readonly string _quoteUrlFormat = "https://api.iextrading.com/1.0/stock/{0}/quote";
+        Quote,
+        Stats,
+        Chart,
+        CompanyInfo,
+        Financial,
+        BatchReportForAStock,
+        BatchReportMarketForMultiStocks,
+        BatchReportFinancialForMultiStocks
+    }
+
+    public class IEXClientHandler : HttpClientWrapper
+    {
+        const string _iexTradingBaseUri = "https://cloud.iexapis.com/stable";
+        readonly string _privateToken;
+        const string _IEXTokenFileName = "config\\IEXToken.dat";
+
+        readonly IDictionary<IEXRequestType, string> _dictRequestUrl;
+
+        public IEXClientHandler()
+        {
+            _privateToken = this.GetIEXToken(_IEXTokenFileName);
+            this._dictRequestUrl = LoadRequestUrl();
+        }
+
+        private IDictionary<IEXRequestType, string> LoadRequestUrl()
+        {
+            IDictionary<IEXRequestType, string> dictRequestUrl = new Dictionary<IEXRequestType, string>()
+            {
+                { IEXRequestType.Quote, this.CreateIEXBaseUri("/stock/{0}/quote") },
+                { IEXRequestType.Stats, this.CreateIEXBaseUri("/stock/{0}/stats") },
+                { IEXRequestType.Chart, this.CreateIEXBaseUri("/stock/{0}/chart/{1}") },
+                { IEXRequestType.CompanyInfo, this.CreateIEXBaseUri("/stock/{0}/company") },
+                { IEXRequestType.Financial,  this.CreateIEXBaseUri("/stock/{0}/financials", "period={1}") },
+                { IEXRequestType.BatchReportForAStock, this.CreateIEXBaseUri("/stock/{0}/batch", "types={1}&range={2}&last={3}") },
+                { IEXRequestType.BatchReportFinancialForMultiStocks, this.CreateIEXBaseUri("/stock/market/batch", "symbols={0}&types=financials&period={1}") },
+                { IEXRequestType.BatchReportMarketForMultiStocks, this.CreateIEXBaseUri("/stock/market/batch", "symbols={0}&types={1}&range={2}&last={3}") },
+            };
+
+            return dictRequestUrl;
+        }
+
+        private string GetIEXToken(string tokenFile)
+        {
+            string tokenFilePath = string.Empty;
+            var currentDir = Environment.CurrentDirectory;
+            tokenFilePath = File.Exists(tokenFile) ? tokenFile : Path.Combine(currentDir, tokenFile);
+
+            if (!File.Exists(tokenFilePath))
+            {
+                throw new FileNotFoundException($"IEXToken filePath:{tokenFilePath} not found.");
+            }
+
+            return File.ReadAllText(tokenFilePath).Trim();
+        }
+
+        public string GetIEXBaseRequestUri(IEXRequestType requestType)
+        {
+            return this._dictRequestUrl[requestType];
+        }
+
+        public string CreateIEXBaseUri(string iexRoute, string queryStr = "")
+        {
+            string tokenStr = string.Format($"?token={_privateToken}");
+            string postRequestStrWithToken = string.IsNullOrEmpty(queryStr) ? tokenStr : string.Concat(tokenStr, "&" ,queryStr);
+
+            return string.Concat(_iexTradingBaseUri, iexRoute, postRequestStrWithToken);
+        }
 
         public BatchReport GetBatchReport(string symbol, IEnumerable<IEXDataType> types, ChartOption range, int itemCount)
         {
             string rangeStr = range.ToString().StartsWith("_") ? range.ToString().Remove(0, 1) : range.ToString();
-            string requestUrl = string.Format(_batchReportUrlFormat, symbol, types.ToStringDelimeter(), rangeStr, itemCount.LimitToMax());
+            string baseRequestUri = GetIEXBaseRequestUri(IEXRequestType.BatchReportForAStock);
+            string requestUrl = string.Format(baseRequestUri, symbol, types.ToStringDelimeter(), rangeStr, itemCount.LimitToMax());
             Console.WriteLine(requestUrl);
 
             string jsonstring = base.GetString(requestUrl).Result;
-            return SerializerHandler.DeserializeObj<BatchReport>(jsonstring);
+            return SerializerHandler.DeserializeObj<BatchReport>(jsonstring);            
         }
 
-        public Dictionary<string, BatchReport> GetBatchReport(string[] symbols, IEnumerable<IEXDataType> types, ChartOption range, int itemCount)
+        public Dictionary<string, BatchReport> GetBatchReport(string[] symbols, IEnumerable<IEXDataType> types, ChartOption range, int itemCount, Period period = Period.Annual)
         {
             string rangeStr = range.ToString().StartsWith("_") ? range.ToString().Remove(0, 1) : range.ToString();
-            string requestUrl = string.Format(_batchReportMultiSymbolsUrlFormat, symbols.ToStringDelimeter(), types.ToStringDelimeter(), rangeStr, itemCount.LimitToMax());
+            //string requestUrl = string.Format(_batchReportMultiSymbolsUrlFormat, symbols.ToStringDelimeter(), types.ToStringDelimeter(), rangeStr, itemCount.LimitToMax());
+            string baseRequestUri = GetIEXBaseRequestUri(IEXRequestType.BatchReportMarketForMultiStocks);
+            string requestUrl = string.Format(
+                baseRequestUri,
+                symbols.ToStringDelimeter(),
+                types.ToStringDelimeter(),
+                rangeStr,
+                itemCount.LimitToMax());
+
+            if (types.Contains(IEXDataType.financials))
+            {
+                requestUrl = requestUrl + $"&period={period}";
+            }
+            requestUrl = requestUrl.ToLower();
             Console.WriteLine(requestUrl);
 
-            string jsonstring = base.GetString(requestUrl).Result;
+            string jsonstring = base.GetString(requestUrl.ToLower()).Result;
             return SerializerHandler.DeserializeObj<Dictionary<string, BatchReport>>(jsonstring);
         }
         
+        /// <summary>
+        /// BatchReport of financial reports as annually or quarterly
+        /// </summary>
+        /// <param name="symbols"></param>
+        /// <param name="period"></param>
+        /// <returns></returns>
+        public List<Chart> GetBatchFinancials(string[] symbols, Period period = Period.Annual)
+        {
+            //string requestUrl = string.Format(_batchFinancialUrlFormat, symbols, period);
+            string requestUrl = string.Format(this._dictRequestUrl[IEXRequestType.BatchReportFinancialForMultiStocks], symbols, period);
+            string jsonstring = base.GetString(requestUrl).Result;
+
+            List<Chart> result = SerializerHandler.DeserializeObj<List<Chart>>(jsonstring);
+            return result;
+        }
+
+        public string GetParams(IDictionary<string, string> dictParams)
+        {
+            return string.Join("&", dictParams.Select(x => x.Key + "=" + x.Value).ToArray());
+        }
+
+
         public Company GetCompany(string symbol)
         {
-            string requestUrl = string.Format(_companyUrlFormat, symbol);
+            //string requestUrl = string.Format(_companyUrlFormat, symbol);
+            string requestUrl = string.Format(this.GetIEXBaseRequestUri(IEXRequestType.CompanyInfo), symbol);
             string jsonstring = base.GetString(requestUrl).Result;
             return SerializerHandler.DeserializeObj<Company>(jsonstring);
         }
 
-        public Financials GetReport(string symbol, Period period)
+        public Financials GetFinancialReport(string symbol, Period period)
         {
-            string reportUrl = string.Format(_reportUrlFormat, symbol, period.ToString());
-
+            //string reportUrl = string.Format(_reportUrlFormat, symbol, period.ToString());
+            string reportUrl = string.Format(this.GetIEXBaseRequestUri(IEXRequestType.Financial), symbol, period.ToString());
             string jsonstring = base.GetString(reportUrl).Result;
 
             Financials result = SerializerHandler.DeserializeObj<Financials>(jsonstring);
@@ -55,8 +154,7 @@
         public List<Chart> GetHistoricData(string symbol, ChartOption chartOption)
         {
             string optionStr = chartOption.ToString().StartsWith("_") ? chartOption.ToString().Remove(0, 1) : chartOption.ToString();
-            string requestUrl = string.Format(_chartUrlFormat, symbol, optionStr);
-
+            string requestUrl = string.Format(this.GetIEXBaseRequestUri(IEXRequestType.Chart), symbol, optionStr);
             string jsonstring = base.GetString(requestUrl).Result;
 
             List<Chart> result = SerializerHandler.DeserializeObj<List<Chart>>(jsonstring);
@@ -65,16 +163,17 @@
 
         public Stat GetKeyStats(string symbol)
         {
-            string reportUrl = string.Format(_keyStatsUrlFormat, symbol);
+            string reportUrl = string.Format(this.GetIEXBaseRequestUri(IEXRequestType.Stats), symbol);
             string jsonstring = base.GetString(reportUrl).Result;
             return SerializerHandler.DeserializeObj<Stat>(jsonstring);
         }
 
         public Quote GetQuote(string symbol)
         {
-            string requestUrl = string.Format(_quoteUrlFormat, symbol);
+            //string requestUrl = string.Format(_quoteUrlFormat, symbol);
+            string requestUrl = string.Format(this.GetIEXBaseRequestUri(IEXRequestType.Quote), symbol);
             string jsonstring = base.GetString(requestUrl).Result;
             return SerializerHandler.DeserializeObj<Quote>(jsonstring);
-        }
+        }       
     }
 }

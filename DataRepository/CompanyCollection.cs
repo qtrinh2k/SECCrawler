@@ -33,12 +33,12 @@
             await collection.FindOneAndUpdateAsync(filter.ToBsonDocument(), updateData.ToBsonDocument());            
         }
 
-        public Dictionary<string, Guid> GetCompanyId(List<string> symbols)
+        public Dictionary<string, ObjectId> GetCompanyId(List<string> symbols)
         {
-            Dictionary<string, Guid> dictSymbolCompId = new Dictionary<string, Guid>();
+            Dictionary<string, ObjectId> dictSymbolCompId = new Dictionary<string, ObjectId>();
             foreach (var result in DbCollection.AsQueryable())
             {
-                if(!dictSymbolCompId.ContainsKey(result.symbol))
+                if(symbols.Contains(result.symbol) && !dictSymbolCompId.ContainsKey(result.symbol))
                 {
                     dictSymbolCompId.Add(result.symbol, result._id);
                 }                                   

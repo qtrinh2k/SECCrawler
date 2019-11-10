@@ -10,11 +10,12 @@ namespace IEXApiHandler.IEXData.Stock
     public class Stat
     {
         [BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid _id { get; set; } = Guid.NewGuid();
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; } = ObjectId.GenerateNewId();
 
         [JsonProperty("companyId")]
-        public Guid companyId { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId companyId { get; set; }
 
         [JsonProperty("companyName")]
         public string CompanyName { get; set; }

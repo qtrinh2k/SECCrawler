@@ -8,6 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using DataRepository;
 using System.Diagnostics.Tracing;
+using IEXApiHandler.IEXData.Stock;
 
 namespace SECReportWeb.Controllers
 {
@@ -71,7 +72,6 @@ namespace SECReportWeb.Controllers
             }
         }
 
-
         [HttpGet("SearchStock")]
         public IActionResult SearchStock(string term)
         {           
@@ -97,6 +97,16 @@ namespace SECReportWeb.Controllers
                 .Result;
             //return filterResults.Any() ? filterResults.FirstOrDefault().CompanyInfo : null;
             return filterResults?.FirstOrDefault();
+        }
+
+        [HttpGet("StockScreener")]
+        public Stat GetCompanyByScreener(string filters)
+        {
+            Stat stat = new Stat();
+
+            
+
+            return stat;
         }
 
         public SECFilingInfo GetFilingByTicker(string ticker)

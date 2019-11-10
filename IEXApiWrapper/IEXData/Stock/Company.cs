@@ -34,8 +34,8 @@ tags	array	an array of strings used to classify the company.
     public class Company
     {
         [BsonId]
-        //[BsonRepresentation(BsonType.ObjectId)]
-        public Guid _id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public ObjectId _id { get; set; }
 
         public string symbol { get; set; }
         public string companyName { get; set; }

@@ -7,75 +7,103 @@ namespace ReportTests
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
-    using Xunit;
+    using NUnit.Framework;
 
     public class IEXApiTests
     {
-        [Fact]
-        public void GetReportTest()
-        {
-            IEXClientHandler response = new IEXClientHandler();
+        readonly string _testSymbol = "IPAR";
+        readonly IEXClientHandler _clientHandler;
 
-            var data = response.GetReport("ipar", Period.Annual);
+        public IEXApiTests()
+        {
+            _clientHandler = new IEXClientHandler();
+        }
+
+        /// <summary>
+        /// 11/10/2019 - GetReport only works with pay acount.
+        /// </summary>
+        [Ignore("Need to have pay account for GetReport to work")]
+        [Test]
+        public void GetFinancialReportTest()
+        {
+            var data = this._clientHandler.GetFinancialReport("ipar", Period.Annual);
             Assert.NotNull(data);
         }
 
-        [Fact]
+        [Ignore("Need to have pay account for GetReport to work")]
+        [Test]
+        public void GetFinancialReportBatchTest()
+        {
+            var tickers = new string[] { "ipar", "ge", "docu" };
+            var data = this._clientHandler.GetBatchFinancials(tickers, Period.Annual);
+
+            Assert.NotNull(data);
+        }
+
+        [Test]
         public void GetKeyStatTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            var data = response.GetKeyStats("ipar");
+            var data = this._clientHandler.GetKeyStats(this._testSymbol);
             Assert.NotNull(data);
+            Assert.IsTrue(data.SharesOutstanding > 10_000);
         }
 
-        [Fact]
+        [Test]
         public void GetHistoricDataTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            List<Chart> data = response.GetHistoricData("ipar", ChartOption._1m);
+            List<Chart> data = this._clientHandler.GetHistoricData(this._testSymbol, ChartOption._1m);
             Assert.NotNull(data);
             Assert.True(data.Count >= 1);
         }
 
-        [Fact]
+        [Test]
         public void GetQuoteTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            var data = response.GetQuote("ipar");
+            var data = this._clientHandler.GetQuote(this._testSymbol);
             Assert.NotNull(data);
+            Assert.IsTrue(data.latestPrice > 0);
         }
 
-        [Fact]
+        [Test]
         public void GetCompanyTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            var data = response.GetCompany("ipar");
+            var data = this._clientHandler.GetCompany(this._testSymbol);
             Assert.NotNull(data);
+            Assert.IsTrue(!string.IsNullOrEmpty(data.companyName));
         }
 
-        [Fact]
+        [Test]
         public void GetBatchReportTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            var data = response.GetBatchReport("ipar",
+            var data = this._clientHandler.GetBatchReport(this._testSymbol,
                                                 new List<IEXDataType> { IEXDataType.quote, IEXDataType.news, IEXDataType.chart },
                                                 ChartOption._1m,
                                                 1);
             Assert.NotNull(data);
+            Assert.NotNull(data.Quote);
+            Assert.NotNull(data.NewsList);
+            Assert.NotNull(data.Charts);
         }
 
-        [Fact]
+        [Test]
         public void GetBatchReportMultiSymbolsTest()
         {
             IEXClientHandler response = new IEXClientHandler();
-            var data = response.GetBatchReport(new string[] { "ipar", "ge", "docu" }, 
+            var tickers = new string[] { "ipar", "ge", "docu" };
+            var data = this._clientHandler.GetBatchReport(tickers, 
                                                 new List<IEXDataType> { IEXDataType.quote, IEXDataType.news, IEXDataType.chart }, 
                                                 ChartOption._1m, 
                                                 1);
             Assert.NotNull(data);
+            Assert.AreEqual(data.Count, tickers.Length);
         }
 
-        [Fact]
+        [Test]
         public void CovertBatchReportTest()
         {
             Dictionary<string, BatchReport> dictReports = new Dictionary<string, BatchReport>();
@@ -86,7 +114,6 @@ namespace ReportTests
                 companyName = "Docusign",
                 close = 10,
                 latestTime = DateTime.Now.ToLongTimeString(),
-
             };
             docuReport.Charts = new List<Chart>
             {
@@ -156,6 +183,6 @@ namespace ReportTests
 
             dictReports.Add("GE", geReport);
             string jsonStr = JsonConvert.SerializeObject(dictReports);
-        }        
+        }                
     }
 }
