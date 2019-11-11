@@ -7,6 +7,9 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Security.Cryptography;
+    using System.Text;
+
     public enum IEXRequestType
     {
         Quote,
@@ -23,7 +26,7 @@
     {
         const string _iexTradingBaseUri = "https://cloud.iexapis.com/stable";
         readonly string _privateToken;
-        const string _IEXTokenFileName = "config\\IEXToken.dat";
+        const string _IEXTokenFileName = "config\\token.dat";
 
         readonly IDictionary<IEXRequestType, string> _dictRequestUrl;
 
@@ -60,8 +63,8 @@
             {
                 throw new FileNotFoundException($"IEXToken filePath:{tokenFilePath} not found.");
             }
-
-            return File.ReadAllText(tokenFilePath).Trim();
+            string token = File.ReadAllText(tokenFilePath).Trim();
+            return token;
         }
 
         public string GetIEXBaseRequestUri(IEXRequestType requestType)
