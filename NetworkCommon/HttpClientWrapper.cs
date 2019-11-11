@@ -4,6 +4,9 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Get/Post Request using HttpClient
+    /// </summary>
     public class HttpClientWrapper
     {
         public async Task<string> GetString(string url)
@@ -13,6 +16,7 @@
 
             return response;
         }
+
         public async Task<string> GetStringEx(string url)
         {
             HttpClient client = new HttpClient();
@@ -27,13 +31,11 @@
             return jobject;
         }
 
-
         public async Task<JArray> GetJsonArray(string url)
         {
             var json = await GetString(url);
             var array = JArray.Parse(json);
             return array;
         }
-
     }
 }
