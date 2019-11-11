@@ -55,9 +55,8 @@
 
         private string GetIEXToken(string tokenFile)
         {
-            string tokenFilePath = string.Empty;
             var currentDir = Environment.CurrentDirectory;
-            tokenFilePath = File.Exists(tokenFile) ? tokenFile : Path.Combine(currentDir, tokenFile);
+            string tokenFilePath = File.Exists(tokenFile) ? tokenFile : Path.Combine(currentDir, tokenFile);
 
             if (!File.Exists(tokenFilePath))
             {
