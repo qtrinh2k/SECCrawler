@@ -124,7 +124,5 @@ namespace ReportTests
             Assert.AreEqual(result.symbol, "GE");
             Console.WriteLine($"Id:{result._id}, Comp:{result.companyName}");
         }
-
-
     }
 }
